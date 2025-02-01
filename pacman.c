@@ -5,8 +5,8 @@
 
 // All the elements to be used 
 // Declared here 
-#define WIDTH 60 
-#define HEIGHT 40 
+#define WIDTH 40 
+#define HEIGHT 20 
 #define PACMAN 'C' 
 #define WALL '#' 
 #define FOOD '.' 
@@ -76,16 +76,15 @@ void initialize()
 	board[pacman_y][pacman_x] = PACMAN; 
 
 	// Points Placed 
-	for (int i = 0; i < HEIGHT; i++) { 
-		for (int j = 0; j < WIDTH; j++) { 
-			if (i % 2 == 0 && j % 2 == 0 
-				&& board[i][j] != WALL 
-				&& board[i][j] != DEMON 
-				&& board[i][j] != PACMAN) { 
+    int entireFood=90; 
+    food=90;
+	while (entireFood != 0) { 
+		int i = (rand() % (HEIGHT + 1)); 
+		int j = (rand() % (WIDTH + 1)); 
 
-				board[i][j] = FOOD; 
-				food++; 
-			} 
+		if (board[i][j] ==' ') { 
+			board[i][j] = FOOD; 
+			entireFood--; 
 		} 
 	} 
 } 
