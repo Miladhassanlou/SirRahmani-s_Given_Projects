@@ -5,13 +5,13 @@
 
 // All the elements to be used 
 // Declared here 
-#define WIDTH 40 
-#define HEIGHT 20 
-#define PACMAN 'U' 
-#define WALL 'O' 
-#define FOOD '*' 
+#define WIDTH 60 
+#define HEIGHT 40 
+#define PACMAN 'C' 
+#define WALL '#' 
+#define FOOD '.' 
 #define EMPTY ' ' 
-#define DEMON '?' 
+#define DEMON 'X' 
 
 // Global Variables are 
 // Declared here 
