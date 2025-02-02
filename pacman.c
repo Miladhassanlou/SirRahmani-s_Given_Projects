@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 // All the elements to be used
 // Declared here
@@ -230,13 +231,98 @@ void saveGame(int *tFood)
 	fclose(fp);
 }
 
+void autoPlaying()
+{
+	initialize(); 
+	food -= 35; 
+	int totalFood = food; 
+	
+	printf("Enter Y to Star autoPlaying:\n"); 
+
+	char ch = getch(); 
+	if (ch != 'Y' && ch != 'y') { 
+		printf("Exit Game! "); 
+		return ; 
+	} 
+
+	while (1) 
+	{ 
+		draw(); 
+		printf("Total Food count: %d\n", totalFood); 
+		printf("Total Food eaten: %d\n", curr); 
+		if (res == 1) { 
+			// Clear screen 
+			system("cls"); 
+			printf("Game Over! Dead by Demon\n Your Score: "
+				"%d\n", 
+				score); 
+			return ; 
+		} 
+
+		if (res == 2) { 
+			// Clear screen 
+			system("cls"); 
+			printf("You Win! \n Your Score: %d\n", score); 
+			return ; 
+		} 
+
+		// Find a random number for pacman's movment 
+		int ch2 = rand()%4; 
+
+		// Moving According to the 
+		// Random Number 
+		switch (ch2) { 
+		case 0: 
+			move(0, -1); 
+			break; 
+		case 1: 
+			move(0, 1); 
+			break; 
+		case 2: 
+			move(-1, 0); 
+			break; 
+		case 3: 
+			move(1, 0); 
+			break; 
+		} 
+		sleep(1);
+		
+		//exit this automatic playing game
+		if(kbhit())
+		{
+			char ch3=getch();
+			if (ch3=='q'||ch3=='Q')
+			{
+			printf("Game Stopped! Game Score: %d\n", score); 
+			return ; 
+			}
+			
+		}
+	} 
+
+	return ;
+}
+
 int main()
 {
 	srand(time(NULL));
 	int totalFood;
+
+	printf("Choose one type of game:\n");
+	printf("1-Automatic Playing by System. \t 2-Play Yourself. \t 3-Exit.\n");
+	char ch2 = getch();
+	switch(ch2)
+	{
+	case '1':
+		autoPlaying();
+		return 0;
+	case '2':
+		break;
+	default:
+		return 0;
+	}
 	start(&totalFood);
 	char ch;
-	char ch2;
 	// Instructions to Play
 	printf(" Use buttons for w(up), a(left) , d(right) and "
 		   "s(down)\nAlso, Press Q for save and quit\n");
