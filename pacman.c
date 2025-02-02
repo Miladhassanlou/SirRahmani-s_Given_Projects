@@ -2,6 +2,7 @@
 #include <conio.h> 
 #include <stdio.h> 
 #include <stdlib.h> 
+#include<time.h>
 
 // All the elements to be used 
 // Declared here 
@@ -38,8 +39,8 @@ void initialize()
 	// Putting Walls inside the Game 
 	int count = 50; 
 	while (count != 0) { 
-		int i = (rand() % (HEIGHT + 1)); 
-		int j = (rand() % (WIDTH + 1)); 
+		int i = (rand() % (HEIGHT)); 
+		int j = (rand() % (WIDTH )); 
 
 		if (board[i][j] != WALL && board[i][j] != PACMAN) { 
 			board[i][j] = WALL; 
@@ -49,11 +50,11 @@ void initialize()
 
 	int val = 5; 
 	while (val--) { 
-		int column = (rand() % (WIDTH + 1)); 
-		for (int j = 3; j < HEIGHT - 3; j++) { 
-			if (board[j][column] != WALL 
-				&& board[j][column] != PACMAN) { 
-				board[j][column] = WALL; 
+		int row = (rand() % (HEIGHT )); 
+		for (int j = 3; j < WIDTH - 3; j++) { 
+			if (board[row][j] != WALL 
+				&& board[row][j] != PACMAN) { 
+				board[row][j] = WALL; 
 			} 
 		} 
 	} 
@@ -61,8 +62,8 @@ void initialize()
 	// Putting Demons in the Game 
 	count = 10; 
 	while (count != 0) { 
-		int i = (rand() % (HEIGHT + 1)); 
-		int j = (rand() % (WIDTH + 1)); 
+		int i = (rand() % (HEIGHT )); 
+		int j = (rand() % (WIDTH )); 
 
 		if (board[i][j] != WALL && board[i][j] != PACMAN) { 
 			board[i][j] = DEMON; 
@@ -135,6 +136,7 @@ void move(int move_x, int move_y)
 // Main Function 
 int main() 
 { 
+	srand(time(NULL));
 	initialize(); 
 	char ch; 
 	food -= 35; 
