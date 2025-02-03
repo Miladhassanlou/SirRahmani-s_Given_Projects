@@ -17,12 +17,18 @@
 #define BONUS '$'
 #define ADD "E:/Coddings Related Files/Temp/pacamn_save.bin"
 
+struct unit{
+	char image;
+	int isPass;
+	int isDead;
+	int foodValue;
+};
 // Global Variables are
 // Declared here
 int res = 0;
 int score = 0;
 int pacman_x, pacman_y;
-char board[HEIGHT][WIDTH];
+struct unit board[HEIGHT][WIDTH];
 int food = 0;
 int curr = 0;
 int countBonus=0;
@@ -33,6 +39,7 @@ int isSaved()
 	if (pfile != NULL)
 	{
 		return 1;
+		fclose(pfile);
 	}
 	else
 	{
@@ -49,10 +56,18 @@ void initialize()
 		{
 			if (i == 0 || j == WIDTH - 1 || j == 0 || i == HEIGHT - 1)
 			{
-				board[i][j] = WALL;
+				board[i][j].image= WALL;
+				board[i][j].isPass= 0;
+				board[i][j].isDead= 0;
+				board[i][j].foodValue= 0;
 			}
 			else
-				board[i][j] = EMPTY;
+			{
+				board[i][j].image = EMPTY;
+				board[i][j].isPass= 1;
+				board[i][j].isDead= 0;
+				board[i][j].foodValue= 0;
+			}
 		}
 	}
 
@@ -63,9 +78,12 @@ void initialize()
 		int i = (rand() % (HEIGHT));
 		int j = (rand() % (WIDTH));
 
-		if (board[i][j] != WALL && board[i][j] != PACMAN)
+		if (board[i][j].image != WALL && board[i][j].image != PACMAN)
 		{
-			board[i][j] = WALL;
+			board[i][j].image= WALL;
+			board[i][j].isPass= 0;
+			board[i][j].isDead= 0;
+			board[i][j].foodValue= 0;
 			count--;
 		}
 	}
@@ -76,9 +94,13 @@ void initialize()
 		int row = (rand() % (HEIGHT));
 		for (int j = 3; j < WIDTH - 3; j++)
 		{
-			if (board[row][j] != WALL && board[row][j] != PACMAN)
+			if (board[row][j].image != WALL && board[row][j].image != PACMAN)
 			{
-				board[row][j] = WALL;
+				board[row][j].image= WALL;
+				board[row][j].isPass= 0;
+				board[row][j].isDead= 0;
+				board[row][j].foodValue= 0;
+
 			}
 		}
 	}
@@ -90,9 +112,12 @@ void initialize()
 		int i = (rand() % (HEIGHT));
 		int j = (rand() % (WIDTH));
 
-		if (board[i][j] != WALL && board[i][j] != PACMAN)
+		if (board[i][j].image != WALL && board[i][j].image != PACMAN)
 		{
-			board[i][j] = DEMON;
+			board[i][j].image = DEMON;
+			board[i][j].isPass = 1;
+			board[i][j].isDead = 1;
+			board[i][j].foodValue = 0;
 			count--;
 		}
 	}
@@ -100,7 +125,11 @@ void initialize()
 	// Cursor at Center
 	pacman_x = WIDTH / 2;
 	pacman_y = HEIGHT / 2;
-	board[pacman_y][pacman_x] = PACMAN;
+	board[pacman_y][pacman_x].image = PACMAN;
+	board[pacman_y][pacman_x].isPass= 1;
+	board[pacman_y][pacman_x].isDead = 0;
+	board[pacman_y][pacman_x].foodValue = 1;
+
 
 	//Bonuses Placed
 	count = 12;
@@ -109,9 +138,12 @@ void initialize()
 		int i = (rand() % (HEIGHT));
 		int j = (rand() % (WIDTH));
 
-		if (board[i][j] == EMPTY)
+		if (board[i][j].image== EMPTY)
 		{
-			board[i][j] = BONUS;
+			board[i][j].image = BONUS;
+			board[i][j].isPass = 1;
+			board[i][j].isDead = 0;
+			board[i][j].foodValue = 0;
 			count--;
 		}
 	}
@@ -121,10 +153,13 @@ void initialize()
 	{
 		for (int j = 0; j < WIDTH; j++)
 		{
-			if (i % 2 == 0 && j % 2 == 0 && board[i][j] != WALL && board[i][j] != DEMON && board[i][j] != PACMAN && board[i][j]!=BONUS)
+			if (i % 2 == 0 && j % 2 == 0 && board[i][j].image != WALL && board[i][j].image != DEMON && board[i][j].image != PACMAN && board[i][j].image !=BONUS)
 			{
 
-				board[i][j] = FOOD;
+				board[i][j].image = FOOD;
+				board[i][j].isPass = 1;
+				board[i][j].isDead = 0;
+				board[i][j].foodValue = 1;
 				food++;
 			}
 		}
@@ -141,7 +176,7 @@ void draw()
 	{
 		for (int j = 0; j < WIDTH; j++)
 		{
-			printf("%c", board[i][j]);
+			printf("%c", board[i][j].image);
 		}
 		printf("\n");
 	}
@@ -164,11 +199,11 @@ void move(int move_x, int move_y)
 		int x = pacman_x + move_x;
 		int y = pacman_y + move_y;
 
-		if (board[y][x] != WALL)
+		if (board[y][x].isPass ==1 )
 		{
-			if (board[y][x] == FOOD)
+			if (board[y][x].foodValue > 0)
 			{
-				score++;
+				score += board[y][x].foodValue;
 				food--;
 				curr++;
 				if (food == 0)
@@ -177,22 +212,31 @@ void move(int move_x, int move_y)
 					return;
 				}
 			}
-			else if (board[y][x] == DEMON)
+			else if (board[y][x].isDead == 1)
 			{
 				res = 1;
 			}
-			else if(board[y][x]== BONUS)
+			else if(board[y][x].image== BONUS)
 			{
 				countBonus=10+1;
 			}
 
-			board[pacman_y][pacman_x] = EMPTY;
+			board[pacman_y][pacman_x].image = EMPTY;
+			board[pacman_y][pacman_x].isPass = 1;
+			board[pacman_y][pacman_x].isDead = 0;
+			board[pacman_y][pacman_x].foodValue = 0;
+
 			pacman_x = x;
 			pacman_y = y;
-			board[pacman_y][pacman_x] = PACMAN;
+			
+			board[pacman_y][pacman_x].image = PACMAN;
+			board[pacman_y][pacman_x].isPass = 1;
+			board[pacman_y][pacman_x].isDead = 0;
+			board[pacman_y][pacman_x].foodValue =0 ;
+
 		}
 	}
-	if(countBonus>0)
+	if(countBonus > 0)
 	countBonus--;
 }
 
@@ -224,16 +268,16 @@ void selfPlaying(int *tFood)
 				fread(&food, sizeof(food), 1, fp);
 				fread(&curr, sizeof(curr), 1, fp);
 				fread(tFood, sizeof(int), 1, fp);
-				fread(&countBonus, sizeof(int), 1, fp);
-
-				
+				fread(&countBonus, sizeof(countBonus), 1, fp);
 				fclose(fp);
 				return;
+
 			case '2':
 				initialize();
 				food -= 35;
 				*(tFood) = food;
 				return;
+
 			default:
 				printf("invalid choice.\n");
 				break;
@@ -263,8 +307,8 @@ void saveGame(int *tFood)
 	fwrite(&score, sizeof(score), 1, fp);
 	fwrite(&food, sizeof(food), 1, fp);
 	fwrite(&curr, sizeof(curr), 1, fp);
-	fwrite(tFood, sizeof(curr), 1, fp);
-	fwrite(&countBonus, sizeof(curr), 1, fp);
+	fwrite(tFood, sizeof(int), 1, fp);
+	fwrite(&countBonus, sizeof(countBonus), 1, fp);
 
 
 	fclose(fp);
@@ -328,7 +372,7 @@ void autoPlaying()
 		} 
 		sleep(1);
 		
-		//exit this automatic playing game
+		//exit automatic playing game
 		if(kbhit())
 		{
 			char ch3=getch();
