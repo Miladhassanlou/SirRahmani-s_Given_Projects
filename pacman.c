@@ -14,6 +14,7 @@
 #define FOOD '.'
 #define EMPTY ' '
 #define DEMON 'X'
+#define BONUS '$'
 #define ADD "E:/Coddings Related Files/Temp/pacamn_save.bin"
 
 // Global Variables are
@@ -24,6 +25,7 @@ int pacman_x, pacman_y;
 char board[HEIGHT][WIDTH];
 int food = 0;
 int curr = 0;
+int countBonus=0;
 
 int isSaved()
 {
@@ -100,12 +102,26 @@ void initialize()
 	pacman_y = HEIGHT / 2;
 	board[pacman_y][pacman_x] = PACMAN;
 
+	//Bonuses Placed
+	count = 12;
+	while (count != 0)
+	{
+		int i = (rand() % (HEIGHT));
+		int j = (rand() % (WIDTH));
+
+		if (board[i][j] == EMPTY)
+		{
+			board[i][j] = BONUS;
+			count--;
+		}
+	}
+
 	// Points Placed
 	for (int i = 0; i < HEIGHT; i++)
 	{
 		for (int j = 0; j < WIDTH; j++)
 		{
-			if (i % 2 == 0 && j % 2 == 0 && board[i][j] != WALL && board[i][j] != DEMON && board[i][j] != PACMAN)
+			if (i % 2 == 0 && j % 2 == 0 && board[i][j] != WALL && board[i][j] != DEMON && board[i][j] != PACMAN && board[i][j]!=BONUS)
 			{
 
 				board[i][j] = FOOD;
@@ -133,36 +149,54 @@ void draw()
 }
 
 void move(int move_x, int move_y)
-{
-	int x = pacman_x + move_x;
-	int y = pacman_y + move_y;
-
-	if (board[y][x] != WALL)
+{ 	
+	int i;
+	if(countBonus>0)
 	{
-		if (board[y][x] == FOOD)
-		{
-			score++;
-			food--;
-			curr++;
-			if (food == 0)
-			{
-				res = 2;
-				return;
-			}
-		}
-		else if (board[y][x] == DEMON)
-		{
-			res = 1;
-		}
-
-		board[pacman_y][pacman_x] = EMPTY;
-		pacman_x = x;
-		pacman_y = y;
-		board[pacman_y][pacman_x] = PACMAN;
+		i=2;
+	}else
+	{
+		i=1;
 	}
+
+	for(;i>0;i--)
+	{
+		int x = pacman_x + move_x;
+		int y = pacman_y + move_y;
+
+		if (board[y][x] != WALL)
+		{
+			if (board[y][x] == FOOD)
+			{
+				score++;
+				food--;
+				curr++;
+				if (food == 0)
+				{
+					res = 2;
+					return;
+				}
+			}
+			else if (board[y][x] == DEMON)
+			{
+				res = 1;
+			}
+			else if(board[y][x]== BONUS)
+			{
+				countBonus=10+1;
+			}
+
+			board[pacman_y][pacman_x] = EMPTY;
+			pacman_x = x;
+			pacman_y = y;
+			board[pacman_y][pacman_x] = PACMAN;
+		}
+	}
+	if(countBonus>0)
+	countBonus--;
 }
 
-void start(int *tFood)
+void selfPlaying(int *tFood)
 {
 	if (isSaved())
 	{
@@ -190,6 +224,9 @@ void start(int *tFood)
 				fread(&food, sizeof(food), 1, fp);
 				fread(&curr, sizeof(curr), 1, fp);
 				fread(tFood, sizeof(int), 1, fp);
+				fread(&countBonus, sizeof(int), 1, fp);
+
+				
 				fclose(fp);
 				return;
 			case '2':
@@ -227,6 +264,8 @@ void saveGame(int *tFood)
 	fwrite(&food, sizeof(food), 1, fp);
 	fwrite(&curr, sizeof(curr), 1, fp);
 	fwrite(tFood, sizeof(curr), 1, fp);
+	fwrite(&countBonus, sizeof(curr), 1, fp);
+
 
 	fclose(fp);
 }
@@ -250,12 +289,14 @@ void autoPlaying()
 		draw(); 
 		printf("Total Food count: %d\n", totalFood); 
 		printf("Total Food eaten: %d\n", curr); 
+		if(countBonus>0)
+		{
+			printf("Bonus Movments: %d\n", countBonus);
+		}
 		if (res == 1) { 
 			// Clear screen 
 			system("cls"); 
-			printf("Game Over! Dead by Demon\n Your Score: "
-				"%d\n", 
-				score); 
+			printf("Game Over! Dead by Demon\n Your Score:%d\n",score); 
 			return ; 
 		} 
 
@@ -321,14 +362,15 @@ int main()
 	default:
 		return 0;
 	}
-	start(&totalFood);
+	
+	selfPlaying(&totalFood);
 	char ch;
+	
 	// Instructions to Play
 	printf(" Use buttons for w(up), a(left) , d(right) and "
 		   "s(down)\nAlso, Press Q for save and quit\n");
 
 	printf("Enter Y to continue: \n");
-
 	ch = getch();
 	if (ch != 'Y' && ch != 'y')
 	{
@@ -341,13 +383,16 @@ int main()
 		draw();
 		printf("Total Food count: %d\n", totalFood);
 		printf("Total Food eaten: %d\n", curr);
+		if(countBonus>0)
+		{
+			printf("Bonus Movments: %d\n", countBonus);
+		}
+		
 		if (res == 1)
 		{
 			// Clear screen
 			system("cls");
-			printf("Game Over! Dead by Demon\n Your Score: "
-				   "%d\n",
-				   score);
+			printf("Game Over! Dead by Demon\n Your Score:%d\n",score);
 			return 1;
 		}
 
@@ -381,7 +426,7 @@ int main()
 		case 'q':
 			system("cls");
 			printf("Exiting game...\t Your Score: %d\n", score);
-			printf("Do you want to save the game?(if Yes press: Y)\n");
+			printf("Do you want to save the game?(Press: Y)\n");
 			ch2 = getch();
 			if (ch2 == 'y' || ch2 == 'Y')
 			{
