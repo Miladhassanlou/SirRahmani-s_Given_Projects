@@ -39,10 +39,17 @@ int res = 0;
 int score = 0;
 int pacman_x, pacman_y;
 struct unit board[HEIGHT][WIDTH];
-struct enemyLocation enemy[5];
+struct enemyLocation enemy[10];
 int food = 0;
 int curr = 0;
 int countBonus=0;
+
+int countInWall;
+int val;
+int countInDemon;
+int countInBonus;
+int countMoveableEnemy;
+int foodHandicap;
 
 int isSaved()
 {
@@ -83,8 +90,8 @@ void initialize()
 	}
 
 	// Putting Walls inside the Game
-	int count = 50;
-	while (count != 0)
+	
+	while (countInWall != 0)
 	{
 		int i = (rand() % (HEIGHT));
 		int j = (rand() % (WIDTH));
@@ -95,11 +102,11 @@ void initialize()
 			board[i][j].isPass= 0;
 			board[i][j].isDead= 0;
 			board[i][j].foodValue= 0;
-			count--;
+			countInWall--;
 		}
 	}
 
-	int val = 5;
+	
 	while (val--)
 	{
 		int row = (rand() % (HEIGHT));
@@ -117,8 +124,8 @@ void initialize()
 	}
 
 	// Putting Demons in the Game
-	count = 10;
-	while (count != 0)
+	
+	while (countInDemon != 0)
 	{
 		int i = (rand() % (HEIGHT));
 		int j = (rand() % (WIDTH));
@@ -129,7 +136,7 @@ void initialize()
 			board[i][j].isPass = 1;
 			board[i][j].isDead = 1;
 			board[i][j].foodValue = 0;
-			count--;
+			countInDemon--;
 		}
 	}
 
@@ -143,8 +150,8 @@ void initialize()
 
 
 	//Bonuses Placed
-	count = 12;
-	while (count != 0)
+
+	while (countInBonus != 0)
 	{
 		int i = (rand() % (HEIGHT));
 		int j = (rand() % (WIDTH));
@@ -155,7 +162,7 @@ void initialize()
 			board[i][j].isPass = 1;
 			board[i][j].isDead = 0;
 			board[i][j].foodValue = 0;
-			count--;
+			countInBonus--;
 		}
 	}
 
@@ -175,8 +182,8 @@ void initialize()
 			}
 		}
 	}
-	//Set Location for 5 Moveable enemies
-	count =5;
+	//Set Location for Moveable enemies
+	int count=countMoveableEnemy;
 	while (count!=0)
 	{
 		int i = (rand() % (WIDTH));
@@ -188,8 +195,8 @@ void initialize()
 			board[j][i].isPass = 1;
 			board[j][i].isDead = 1;
 			board[j][i].foodValue = 0;
-			enemy[5-count].x=i;
-			enemy[5-count].y=j;
+			enemy[countMoveableEnemy-count].x=i;
+			enemy[countMoveableEnemy-count].y=j;
 			count--;
 		}
 	}
@@ -301,13 +308,14 @@ void selfPlaying(int *tFood)
 				fread(tFood, sizeof(int), 1, fp);
 				fread(&countBonus, sizeof(countBonus), 1, fp);
 				fread(enemy, sizeof(enemy), 1, fp);
+				fread(&countMoveableEnemy, sizeof(int), 1, fp);
 
 				fclose(fp);
 				return;
 
 			case '2':
 				initialize();
-				food -= 35;
+				food -= foodHandicap;
 				*(tFood) = food;
 				return;
 
@@ -321,7 +329,7 @@ void selfPlaying(int *tFood)
 	{
 		printf("starting New game...\n");
 		initialize();
-		food -= 35;
+		food -= foodHandicap;
 		*(tFood) = food;
 	}
 }
@@ -343,6 +351,7 @@ void saveGame(int *tFood)
 	fwrite(tFood, sizeof(int), 1, fp);
 	fwrite(&countBonus, sizeof(countBonus), 1, fp);
 	fwrite(enemy, sizeof(enemy), 1, fp);
+	fwrite(&countMoveableEnemy, sizeof(int), 1, fp);
 
 	fclose(fp);
 }
@@ -399,7 +408,7 @@ void moveEnemy (int num)
 void autoPlaying()
 {
 	initialize(); 
-	food -= 35; 
+	food -= foodHandicap; 
 	int totalFood = food; 
 	
 	printf("Enter Y to Star autoPlaying:\n"); 
@@ -414,7 +423,7 @@ void autoPlaying()
 	{ 
 		draw(); 
 		// Movements of 5 Enemys
-		for (int i=0; i<5; i++)
+		for (int i=0; i<countMoveableEnemy; i++)
 		{
 			moveEnemy(i);
 		}
@@ -445,7 +454,8 @@ void autoPlaying()
 
 		// Moving According to the 
 		// Random Number 
-		switch (ch2) { 
+		switch (ch2)
+		{ 
 		case 0: 
 			move(0, -1); 
 			break; 
@@ -484,11 +494,34 @@ int main()
 {
 	srand(time(NULL));
 	int totalFood;
+	
+	printf("Choose Difficulty of games:\n");
+	printf("1-Easy. \t 2-Hard. \t 3-Exit.\n");
+	int a;
+	char ch2 = getch();
+	switch(ch2)
+	{
+	case '1':
+		a=1;
+		break;
+	case '2':
+		a=2;
+		break;
+	default:
+		return 0;
+	}
+
+	countInWall=a*25;
+	val=a*3;
+	countInDemon=a*5;
+	countInBonus=20/a;
+	countMoveableEnemy=a*5;
+	foodHandicap=36/a;
 
 	printf("Choose one type of game:\n");
 	printf("1-Automatic Playing by System. \t 2-Play Yourself. \t 3-Exit.\n");
-	char ch2 = getch();
-	switch(ch2)
+	char ch3 = getch();
+	switch(ch3)
 	{
 	case '1':
 		autoPlaying();
@@ -502,6 +535,7 @@ int main()
 	selfPlaying(&totalFood);
 	char ch;
 	
+
 	// Instructions to Play
 	printf(" Use buttons for w(up), a(left) , d(right) and "
 		   "s(down)\nAlso, Press Q for save and quit\n");
@@ -518,8 +552,8 @@ int main()
 	{
 
 		draw();
-		// Movements of 5 Enemys
-		for (int i=0; i<5; i++)
+		// Movements of Enemys
+		for (int i=0; i<countMoveableEnemy; i++)
 		{
 			moveEnemy(i);
 		}
@@ -548,7 +582,7 @@ int main()
 		}
 		
 		//Stop Running code for One Minute To See Enemies Movement 
-		usleep(300000);
+		usleep(200000);
 	
     	// Taking the Input from the user if any bottoms hit
 		if(kbhit())
